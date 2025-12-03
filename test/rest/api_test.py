@@ -16,7 +16,7 @@ class TestApi(unittest.TestCase):
         self.assertTrue(len(BASE_URL) > 8, "URL no configurada")
 
     def test_api_add(self):
-        url = f"{BASE_URL}/calc/add/1/2"
+        url = f"{BASE_URL_MOCK}/calc/add/1/2"
         response = urlopen(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
             response.status, http.client.OK, f"Error en la petición API a {url}"
@@ -26,7 +26,7 @@ class TestApi(unittest.TestCase):
         )
 
     def test_api_multiply(self):
-        url = f"{BASE_URL}/calc/mul/1/2"
+        url = f"{BASE_URL_MOCK}/calc/mul/1/2"
         response = urlopen(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
             response.status, http.client.OK, f"Error en la petición API a {url}"
@@ -36,15 +36,15 @@ class TestApi(unittest.TestCase):
         )
 
     def test_api_division(self):
-        url = f"{BASE_URL}/calc/div/1/2"
+        url = f"{BASE_URL_MOCK}/calc/div/1/2"
         response = urlopen(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
             response.status, http.client.OK, f"Error en la petición API a {url}"
         )
         self.assertEqual(
-            response.read().decode(), "0.5", "ERROR MULTIPLY"
+            response.read().decode(), "0.5", "ERROR DIVIDE"
         )
-    
+
     def test_api_sqrt(self):
         url = f"{BASE_URL_MOCK}/calc/sqrt/64"
         response = urlopen(url, timeout=DEFAULT_TIMEOUT)
