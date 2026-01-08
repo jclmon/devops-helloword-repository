@@ -43,7 +43,7 @@ class TestUtil(unittest.TestCase):
     def test_validate_permissions_correct_param(self):
         self.assertTrue(util.validate_permissions("login", "user1"))
 
-    def test_validate_permissions_correct_invalid_type(self):
+    def test_validate_permissions_invalid_param(self):
         self.assertFalse(util.validate_permissions("login", "userwrong"))
 
 if __name__ == "__main__":  # pragma: no cover

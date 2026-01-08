@@ -33,8 +33,10 @@ class TestCalculate(unittest.TestCase):
     def test_divide_method_returns_correct_result(self):
         self.assertEqual(1, self.calc.divide(2, 2))
         self.assertEqual(1.5, self.calc.divide(3, 2))
-        self.assertRaises(TypeError, self.calc.divide, "1", 0)
         self.assertRaises(TypeError, self.calc.divide, "2", 2)
+
+    def test_divide_method_fails_with_0(self):
+        self.assertRaises(TypeError, self.calc.divide, 1, 0)
 
     def test_divide_method_fails_with_nan_parameter(self):
         self.assertRaises(TypeError, self.calc.divide, "2", 2)
