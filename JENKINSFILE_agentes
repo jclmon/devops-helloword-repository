@@ -1,0 +1,165 @@
+pipeline {
+    agent none
+    
+    //no descarga el codigo fuente en todos los agentes
+    options{ skipDefaultCheckout() }
+    
+    stages {
+        stage('Get Code') {
+			agent { label 'windows' }
+            steps {
+                //limpio y obtengo el codigo del repositorio
+				cleanWs()
+                git 'https://github.com/jclmon/devops-helloword-repository.git'
+                sh "whoami"
+                sh "hostname"
+                echo WORKSPACE
+                bat 'dir'
+				stash name:'code', includes:'**'
+            }
+        }
+		stage('Tests Paralelos') {
+            parallel {
+				stage('Unit') {
+					agent { label 'python' }
+					steps {
+						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+							unstash 'code'
+							sh "whoami"
+							sh "hostname"
+							echo WORKSPACE
+							bat '''
+								set PYTHONPATH=%WORKSPACE%
+								coverage run --branch --source=app --omit=app\\__init__.py,app\\api.py -m pytest --junitxml=result-unit.xml test\\unit
+								coverage xml
+							'''
+							junit testResults: 'result-unit.xml' 
+							//datos de coverage
+							stash name: 'coverage-data', includes: '.coverage'
+						}
+					}
+				}
+				stage('Rest') {
+					agent { label 'windows' }
+					steps {
+						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+							unstash 'code'
+							sh "whoami"
+							sh "hostname"
+							echo WORKSPACE
+							bat '''
+								echo 'Variable entorno para flask'
+								set FLASK_APP=app\\api.py
+								echo 'Ejecuto flask en background'
+								start flask run
+								echo 'Arranco wiremock con el mock de microservicios'
+								start java -jar C:\\Producto\\wiremock\\wiremock-standalone-3.3.1.jar --port 9090 --v --root-dir test\\wiremock
+								sleep 10
+								echo 'Ejecuto los test sobre los microservicios'
+								set PYTHON_PATH=%WORKSPACE%
+								pytest --junitxml=result-rest.xml test\\rest
+							'''
+							junit skipPublishingChecks: true, testResults: 'result-rest.xml' 
+						}
+					}
+				} 
+				stage('Static') {
+					agent { label 'python' }
+					steps {
+						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+							unstash 'code'
+							sh "whoami"
+							sh "hostname"
+							echo WORKSPACE
+							bat '''
+								flake8 --exit-zero --format=pylint app > result-flake8.out
+							'''
+							recordIssues tools:
+								[ flake8(name: 'Flake8', pattern: 'result-flake8.out') ],
+								qualityGates: [
+												[threshold: 8, type: 'TOTAL', unstable: true],
+												[threshold: 10, type: 'TOTAL', failure: true],
+											  ]
+						}
+											  
+					}
+				}    
+				stage('Security') {
+					agent { label 'python' }
+					steps {					
+						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+							unstash 'code'
+							sh "whoami"
+							sh "hostname"
+							echo WORKSPACE
+							bat '''
+								bandit --exit-zero -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}"
+							'''
+							recordIssues tools:
+								[ pyLint(name: 'Bandit', pattern: 'bandit.out') ], 
+								qualityGates: [
+												[threshold: 2, type: 'TOTAL', unstable: true],
+												[threshold: 4, type: 'TOTAL', failure: true],
+											  ]	
+						}
+					}
+				}
+			}
+		}
+		stage('Coverage') {
+			agent { label 'python' }
+			steps {
+				unstash 'code'
+				sh "whoami"
+				sh "hostname"
+				echo WORKSPACE
+				echo 'Recuperamos los datos de cobertura de la ejecucion junit para generar el XML sin ejecutar los test de nuevo'
+				unstash 'coverage-data'
+				bat 'python -m coverage xml'
+				recordCoverage qualityGates: [
+						// Si es menor a 95%, marcar como UNSTABLE
+						[threshold: 95.0, metric: 'LINE', baseline: 'PROJECT', criticality: 'UNSTABLE'],
+						// Si es menor a 85%, marcar como FAILURE
+						[threshold: 85.0, metric: 'LINE', baseline: 'PROJECT', criticality: 'FAILURE'],
+						// Si es menor a 90%, marcar como UNSTABLE
+						[threshold: 90.0, metric: 'BRANCH', baseline: 'PROJECT', criticality: 'UNSTABLE'],
+						// Si es menor a 80%, marcar como FAILURE
+						[threshold: 80.0, metric: 'BRANCH', baseline: 'PROJECT', criticality: 'FAILURE']
+					],
+					tools: [
+						[parser: 'COBERTURA', pattern: 'coverage.xml']
+					]
+			}
+		}
+		stage('Performance') {
+			agent { label 'windows' }
+			steps {
+				unstash 'code'
+				sh "whoami"
+				sh "hostname"
+				echo WORKSPACE
+				bat '''
+					echo 'Variable entorno para flask'
+					set FLASK_APP=app\\api.py
+					echo 'Ejecuto flask en background'
+					start flask run
+					sleep 5
+					C:\\Producto\\apache-jmeter-5.6.3\\bin\\jmeter.bat -n -t test\\jmeter\\flask.jmx -f -l flask.jtl
+					'''
+				perfReport sourceDataFiles: 'flask.jtl'
+			}
+		}			
+    }    
+	
+    post {
+        always {
+            node('windows') {
+                cleanWs(deleteDirs: true, notFailBuild: true)
+            }
+            node('python') {
+                cleanWs(deleteDirs: true, notFailBuild: true)
+            }
+        }
+    }
+	
+}
