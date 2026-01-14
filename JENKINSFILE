@@ -7,7 +7,7 @@ pipeline {
             steps {
                 //limpio y obtengo el codigo del repositorio
 				cleanWs()
-                git 'https://github.com/jclmon/devops-helloword-repository.git'
+                git branch: 'feature_fix_coverage', url: 'https://github.com/jclmon/devops-helloword-repository.git'
                 sh "whoami"
                 sh "hostname"
                 echo WORKSPACE
