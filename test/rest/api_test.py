@@ -1,7 +1,6 @@
 import http.client
 import os
 import unittest
-from urllib.request import urlopen
 import requests
 
 import pytest
@@ -18,42 +17,42 @@ class TestApi(unittest.TestCase):
 
     def test_api_add(self):
         url = f"{BASE_URL_MOCK}/calc/add/1/2"
-        response = requests(url, timeout=DEFAULT_TIMEOUT)
+        response = requests.get(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
-            response.status_code, http.client.OK, f"Error en la petición API a {url}"
+            response.status_code_code, http.client.OK, f"Error en la petición API a {url}"
         )
         self.assertEqual(
-             response.text.decode(), "3", "ERROR ADD"
+             response.text, "3", "ERROR ADD"
         )
 
     def test_api_multiply(self):
         url = f"{BASE_URL_MOCK}/calc/mul/1/2"
-        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        response = requests.get(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
-            response.status, http.client.OK, f"Error en la petición API a {url}"
+            response.status_code, http.client.OK, f"Error en la petición API a {url}"
         )
         self.assertEqual(
-            response.read().decode(), "2", "ERROR MULTIPLY"
+            response.text, "2", "ERROR MULTIPLY"
         )
 
     def test_api_division(self):
         url = f"{BASE_URL_MOCK}/calc/div/1/2"
-        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        response = requests.get(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
-            response.status, http.client.OK, f"Error en la petición API a {url}"
+            response.status_code, http.client.OK, f"Error en la petición API a {url}"
         )
         self.assertEqual(
-            response.read().decode(), "0.5", "ERROR DIVIDE"
+            response.text, "0.5", "ERROR DIVIDE"
         )
 
     def test_api_sqrt(self):
         url = f"{BASE_URL_MOCK}/calc/sqrt/64"
-        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        response = requests.get(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
-            response.status, http.client.OK, f"Error en la petición API a {url}"
+            response.status_code, http.client.OK, f"Error en la petición API a {url}"
         )
         self.assertEqual(
-            response.read().decode(), "8", "ERROR SQRT"
+            response.text, "8", "ERROR SQRT"
         )
 
 if __name__ == "__main__":  # pragma: no cover
