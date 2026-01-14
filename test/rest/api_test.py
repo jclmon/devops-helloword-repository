@@ -19,12 +19,12 @@ class TestApi(unittest.TestCase):
         url = f"{BASE_URL_MOCK}/calc/add/1/2"
         req = urllib.request.Request(url)
         with urllib.request.urlopen(req, timeout=DEFAULT_TIMEOUT) as response:
-        self.assertEqual(
-            response.status, http.client.OK, f"Error en la petición API a {url}"
-        )
-        self.assertEqual(
-            response.read().decode(), "3", "ERROR ADD"
-        )
+            self.assertEqual(
+                response.status, http.client.OK, f"Error en la petición API a {url}"
+            )
+            self.assertEqual(
+                response.read().decode(), "3", "ERROR ADD"
+            )
 
     def test_api_multiply(self):
         url = f"{BASE_URL_MOCK}/calc/mul/1/2"
