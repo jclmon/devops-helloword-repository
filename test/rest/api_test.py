@@ -19,7 +19,7 @@ class TestApi(unittest.TestCase):
         url = f"{BASE_URL_MOCK}/calc/add/1/2"
         response = requests.get(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
-            response.status_code_code, http.client.OK, f"Error en la petición API a {url}"
+            response.status_code, http.client.OK, f"Error en la petición API a {url}"
         )
         self.assertEqual(
              response.text, "3", "ERROR ADD"
