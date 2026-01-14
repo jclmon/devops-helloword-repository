@@ -1,8 +1,7 @@
 import http.client
 import os
 import unittest
-from urllib.request import urlopen
-import requests
+import urllib.request
 
 import pytest
 
@@ -18,7 +17,8 @@ class TestApi(unittest.TestCase):
 
     def test_api_add(self):
         url = f"{BASE_URL_MOCK}/calc/add/1/2"
-        response = requests(url, timeout=DEFAULT_TIMEOUT)
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=DEFAULT_TIMEOUT) as response:
         self.assertEqual(
             response.status, http.client.OK, f"Error en la petición API a {url}"
         )
@@ -28,7 +28,7 @@ class TestApi(unittest.TestCase):
 
     def test_api_multiply(self):
         url = f"{BASE_URL_MOCK}/calc/mul/1/2"
-        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        response = urllib.request.urlopen(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
             response.status, http.client.OK, f"Error en la petición API a {url}"
         )
@@ -38,7 +38,7 @@ class TestApi(unittest.TestCase):
 
     def test_api_division(self):
         url = f"{BASE_URL_MOCK}/calc/div/1/2"
-        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        response = urllib.request.urlopen(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
             response.status, http.client.OK, f"Error en la petición API a {url}"
         )
@@ -48,7 +48,7 @@ class TestApi(unittest.TestCase):
 
     def test_api_sqrt(self):
         url = f"{BASE_URL_MOCK}/calc/sqrt/64"
-        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        response = urllib.request.urlopen(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
             response.status, http.client.OK, f"Error en la petición API a {url}"
         )
