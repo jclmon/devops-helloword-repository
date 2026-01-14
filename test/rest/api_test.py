@@ -2,6 +2,7 @@ import http.client
 import os
 import unittest
 from urllib.request import urlopen
+import requests
 
 import pytest
 
@@ -17,7 +18,7 @@ class TestApi(unittest.TestCase):
 
     def test_api_add(self):
         url = f"{BASE_URL_MOCK}/calc/add/1/2"
-        response = urlopen(url, timeout=DEFAULT_TIMEOUT)
+        response = requests(url, timeout=DEFAULT_TIMEOUT)
         self.assertEqual(
             response.status, http.client.OK, f"Error en la petición API a {url}"
         )
