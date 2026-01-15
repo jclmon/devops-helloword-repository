@@ -11,7 +11,7 @@ pipeline {
             steps {
                 //limpio y obtengo el codigo del repositorio
 				cleanWs()
-                git branch: 'feature_fix_coverage', url: 'https://github.com/jclmon/devops-helloword-repository.git'
+                git 'https://github.com/jclmon/devops-helloword-repository.git'
                 sh "whoami"
                 sh "hostname"
                 echo WORKSPACE
@@ -38,8 +38,6 @@ pipeline {
 							junit testResults: 'result-unit.xml' 
 							//datos de coverage
 							stash name: 'coverage-data', includes: '.coverage'
-							//limpio el workspace
-							cleanWs(disableDeferredWipeout: true, deleteDirs: true, notFailBuild: true)
 						}
 					}
 				}
@@ -65,8 +63,6 @@ pipeline {
 								pytest --junitxml=result-rest.xml test\\rest
 							'''
 							junit skipPublishingChecks: true, testResults: 'result-rest.xml' 
-							//limpio el workspace
-							cleanWs(disableDeferredWipeout: true, deleteDirs: true, notFailBuild: true)
 						}
 					}
 				} 
@@ -88,8 +84,6 @@ pipeline {
 												[threshold: 8, type: 'TOTAL', unstable: true],
 												[threshold: 10, type: 'TOTAL', failure: true],
 											  ]
-							//limpio el workspace
-							cleanWs(disableDeferredWipeout: true, deleteDirs: true, notFailBuild: true)
 						}
 											  
 					}
@@ -130,35 +124,10 @@ pipeline {
 								} else {
 									echo "Jenkins no pudo encontrar o parsear ningún issue en bandit.out"
 								}
-								//limpio el workspace
-								cleanWs(disableDeferredWipeout: true, deleteDirs: true, notFailBuild: true)
 							}
 						}						
 					}
-				}				
-				stage('Performance') {
-					agent { label 'windows' }
-					steps {				
-						sh "whoami"
-						sh "hostname"
-						echo WORKSPACE
-						
-						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-							unstash 'code'
-							bat '''
-								echo 'Variable entorno para flask'
-								set FLASK_APP=app\\api.py
-								echo 'Ejecuto flask en background'
-								start flask run
-								sleep 5
-								C:\\Producto\\apache-jmeter-5.6.3\\bin\\jmeter.bat -n -t test\\jmeter\\flask.jmx -f -l flask.jtl
-								'''
-							perfReport sourceDataFiles: 'flask.jtl'
-							//limpio el workspace
-							cleanWs(disableDeferredWipeout: true, deleteDirs: true, notFailBuild: true)
-						}
-					}
-				}	
+				}
 			}
 		}
 		stage('Coverage') {
@@ -190,7 +159,29 @@ pipeline {
 				}
 			}
 		}
-		
+		stage('Performance') {
+			agent { label 'windows' }
+			steps {				
+				sh "whoami"
+				sh "hostname"
+				echo WORKSPACE
+				
+				catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+					unstash 'code'
+					bat '''
+						echo 'Variable entorno para flask'
+						set FLASK_APP=app\\api.py
+						echo 'Ejecuto flask en background'
+						start flask run
+						sleep 5
+						C:\\Producto\\apache-jmeter-5.6.3\\bin\\jmeter.bat -n -t test\\jmeter\\flask.jmx -f -l flask.jtl
+						'''
+					perfReport sourceDataFiles: 'flask.jtl'
+					//limpio el workspace
+					cleanWs(disableDeferredWipeout: true, deleteDirs: true, notFailBuild: true)
+				}
+			}
+		}			
     }    
 	
 }
