@@ -28,8 +28,9 @@ pipeline {
 						sh "hostname"
 						echo WORKSPACE
 						
-						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+						catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 							unstash 'code'
+							
 							bat '''
 								set PYTHONPATH=%WORKSPACE%
 								coverage run --branch --source=app --omit=app\\__init__.py,app\\api.py -m pytest --junitxml=result-unit.xml test\\unit
@@ -48,8 +49,9 @@ pipeline {
 						sh "hostname"
 						echo WORKSPACE
 
-						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+						catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 							unstash 'code'
+							
 							bat '''
 								echo 'Variable entorno para flask'
 								set FLASK_APP=app\\api.py
@@ -73,8 +75,9 @@ pipeline {
 						sh "hostname"
 						echo WORKSPACE
 
-						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+						catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 							unstash 'code'
+							
 							bat '''
 								flake8 --exit-zero --format=pylint app > result-flake8.out
 							'''
@@ -96,7 +99,7 @@ pipeline {
 						echo WORKSPACE
 
 						script {
-							catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+							catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 								unstash 'code'
 								
 								// Ejecuto Bandit con un formato que PyLint entienda
@@ -128,6 +131,28 @@ pipeline {
 						}						
 					}
 				}
+				stage('Performance') {
+					agent { label 'windows' }
+					steps {				
+						sh "whoami"
+						sh "hostname"
+						echo WORKSPACE
+						
+						catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+							unstash 'code'
+							
+							bat '''
+								echo 'Variable entorno para flask'
+								set FLASK_APP=app\\api.py
+								echo 'Ejecuto flask en background'
+								start flask run
+								sleep 5
+								C:\\Producto\\apache-jmeter-5.6.3\\bin\\jmeter.bat -n -t test\\jmeter\\flask.jmx -f -l flask.jtl
+								'''
+							perfReport sourceDataFiles: 'flask.jtl'
+						}
+					}
+				}	
 			}
 		}
 		stage('Coverage') {
@@ -137,7 +162,7 @@ pipeline {
 				sh "hostname"
 				echo WORKSPACE
 				
-				catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+				catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 					echo 'Recuperamos los datos de cobertura de la ejecucion junit para generar el XML sin ejecutar los test de nuevo'
 					unstash 'coverage-data'
 					bat 'python -m coverage xml'
@@ -154,34 +179,20 @@ pipeline {
 						tools: [
 							[parser: 'COBERTURA', pattern: 'coverage.xml']
 						]
-					//limpio el workspace
-					cleanWs(disableDeferredWipeout: true, deleteDirs: true, notFailBuild: true)
 				}
+			}
+		}		
+    }    
+	post {
+		always {
+		    //limpio el workspace
+			node('windows') {
+				cleanWs(disableDeferredWipeout: true, deleteDirs: true, notFailBuild: true)
+			}
+			node('python') {
+				cleanWs(disableDeferredWipeout: true, deleteDirs: true, notFailBuild: true)
 			}
 		}
-		stage('Performance') {
-			agent { label 'windows' }
-			steps {				
-				sh "whoami"
-				sh "hostname"
-				echo WORKSPACE
-				
-				catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-					unstash 'code'
-					bat '''
-						echo 'Variable entorno para flask'
-						set FLASK_APP=app\\api.py
-						echo 'Ejecuto flask en background'
-						start flask run
-						sleep 5
-						C:\\Producto\\apache-jmeter-5.6.3\\bin\\jmeter.bat -n -t test\\jmeter\\flask.jmx -f -l flask.jtl
-						'''
-					perfReport sourceDataFiles: 'flask.jtl'
-					//limpio el workspace
-					cleanWs(disableDeferredWipeout: true, deleteDirs: true, notFailBuild: true)
-				}
-			}
-		}			
-    }    
+	}	
 	
 }
