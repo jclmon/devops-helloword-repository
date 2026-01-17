@@ -28,7 +28,7 @@ pipeline {
 						sh "hostname"
 						echo WORKSPACE
 						
-						catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 							unstash 'code'
 							
 							bat '''
@@ -49,7 +49,7 @@ pipeline {
 						sh "hostname"
 						echo WORKSPACE
 
-						catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 							unstash 'code'
 							
 							bat '''
@@ -75,7 +75,7 @@ pipeline {
 						sh "hostname"
 						echo WORKSPACE
 
-						catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 							unstash 'code'
 							
 							bat '''
@@ -99,7 +99,7 @@ pipeline {
 						echo WORKSPACE
 
 						script {
-							catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+							catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 								unstash 'code'
 								
 								// Ejecuto Bandit con un formato que PyLint entienda
@@ -138,7 +138,7 @@ pipeline {
 						sh "hostname"
 						echo WORKSPACE
 						
-						catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+						catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 							unstash 'code'
 							
 							bat '''
@@ -162,7 +162,7 @@ pipeline {
 				sh "hostname"
 				echo WORKSPACE
 				
-				catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+				catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 					echo 'Recuperamos los datos de cobertura de la ejecucion junit para generar el XML sin ejecutar los test de nuevo'
 					unstash 'coverage-data'
 					bat 'python -m coverage xml'

@@ -20,7 +20,7 @@ pipeline {
 				sh "hostname"
 				echo WORKSPACE
 
-				catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+				catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 					bat '''
 						set PYTHONPATH=%WORKSPACE%
 						coverage run --branch --source=app --omit=app\\__init__.py,app\\api.py -m pytest --junitxml=result-unit.xml test\\unit
@@ -38,7 +38,7 @@ pipeline {
 				sh "hostname"
 				echo WORKSPACE
 					
-				catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+				catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 					bat '''
 						echo 'Variable entorno para flask'
 						set FLASK_APP=app\\api.py
@@ -61,7 +61,7 @@ pipeline {
 				sh "hostname"
 				echo WORKSPACE
 				
-				catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+				catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 					bat '''
 						flake8 --exit-zero --format=pylint app > result-flake8.out
 					'''
@@ -81,7 +81,7 @@ pipeline {
 				echo WORKSPACE
 
     		    script {
-    		        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+    		        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                         // Ejecuto Bandit con un formato que PyLint entienda
                         bat """
                             bandit -r . -f custom -o bandit.out --msg-template "{abspath}:{line}: [{test_id}] {msg}" --exit-zero
@@ -117,7 +117,7 @@ pipeline {
 				sh "hostname"
 				echo WORKSPACE
 				
-				catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+				catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 					echo 'Recuperamos los datos de cobertura de la ejecucion junit para generar el XML sin ejecutar los test de nuevo'
 					unstash 'coverage-data'
 					bat 'python -m coverage xml'
@@ -143,7 +143,7 @@ pipeline {
 				sh "hostname"
 				echo WORKSPACE
 
-				catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+				catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
 					bat '''
 						echo 'Variable entorno para flask'
 						set FLASK_APP=app\\api.py
