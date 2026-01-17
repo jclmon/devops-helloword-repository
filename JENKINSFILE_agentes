@@ -84,11 +84,10 @@ pipeline {
 							recordIssues tools:
 								[ flake8(name: 'Flake8', pattern: 'result-flake8.out') ],
 								qualityGates: [
-												[threshold: 8, type: 'TOTAL', unstable: true],
-												[threshold: 10, type: 'TOTAL', failure: true],
+											    [threshold: 8, type: 'TOTAL', criticality: 'UNSTABLE'],
+										        [threshold: 10, type: 'TOTAL', criticality: 'FAILURE'],
 											  ]
 						}
-											  
 					}
 				}    
 				stage('Security') {
